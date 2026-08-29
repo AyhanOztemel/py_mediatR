@@ -31,6 +31,9 @@ dependencies = []
 
 [project.optional-dependencies]
 pydantic = ["pydantic>=1.10"]
+# Test-only, deliberately free of anything that needs a compiler: twine pulls in
+# nh3 (Rust), which has no free-threaded wheel and cannot build on 3.13t.
+test = ["pytest>=7", "pytest-asyncio>=0.23"]
 dev = ["pytest>=7", "pytest-asyncio>=0.23", "build", "twine"]
 
 [project.urls]

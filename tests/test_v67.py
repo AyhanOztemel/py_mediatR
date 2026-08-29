@@ -1,6 +1,7 @@
 """Regression tests for the v6.7 hardening pass and the flow trace."""
 import asyncio
 import logging
+import sys
 from typing import Optional
 
 import pytest
@@ -113,12 +114,17 @@ def _mediator_with_transaction(session, **kwargs):
     return m
 
 
-def test_cleanup_failure_is_attached_to_the_original_exception():
+def test_cleanup_failure_is_never_silent(caplog):
     m = _mediator_with_transaction(RollbackAlsoFails())
-    with pytest.raises(ValueError) as info:
-        m.send(Work())
-    notes = " ".join(getattr(info.value, "__notes__", []))
-    assert "rollback() FAILED" in notes
+    with caplog.at_level(logging.ERROR, logger="mediatr.transaction"):
+        with pytest.raises(ValueError) as info:
+            m.send(Work())
+    assert "rollback() FAILED" in caplog.text
+
+    # Exception.add_note is 3.11+; on 3.10 the log above is the only channel.
+    if sys.version_info >= (3, 11):
+        notes = " ".join(getattr(info.value, "__notes__", []))
+        assert "rollback() FAILED" in notes
 
 
 def test_cleanup_failure_can_be_promoted_to_an_error():
