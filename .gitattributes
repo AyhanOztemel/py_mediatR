@@ -1,0 +1,5 @@
+# Normalise to LF in the repository; Git still checks out CRLF on Windows.
+* text=auto eol=lf
+*.png binary
+*.whl binary
+*.gz binary

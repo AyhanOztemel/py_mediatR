@@ -1,0 +1,53 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "py-mediatR"
+version = "6.7.0"
+description = ".NET MediatR-inspired high-performance CQRS/Mediator for Python: async pipeline, notifications, streaming, DI (singleton/scoped/transient), CancellationToken, auto-discovery, free-threaded (no-GIL) ready."
+readme = "README.md"
+license = { file = "LICENSE" }
+authors = [{ name = "Ayhan Öztemel", email = "ayhanoztemel@hotmail.com" }]
+requires-python = ">=3.10"
+keywords = ["mediatr", "cqrs", "mediator", "pipeline", "di", "dependency-injection", "cancellation", "nogil", "free-threaded"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: Free Threading :: 3 - Stable",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Typing :: Typed",
+]
+dependencies = []
+
+[project.optional-dependencies]
+pydantic = ["pydantic>=1.10"]
+dev = ["pytest>=7", "pytest-asyncio>=0.23", "build", "twine"]
+
+[project.urls]
+Homepage = "https://github.com/AyhanOztemel/py_mediatR"
+Source = "https://github.com/AyhanOztemel/py_mediatR"
+Issues = "https://github.com/AyhanOztemel/py_mediatR/issues"
+Changelog = "https://github.com/AyhanOztemel/py_mediatR/blob/main/README.md"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+# Lowercase alias so `import py_mediatr` also works on case-sensitive filesystems.
+[tool.setuptools]
+py-modules = ["py_mediatr"]
+
+[tool.setuptools.package-data]
+py_mediatR = ["py.typed"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

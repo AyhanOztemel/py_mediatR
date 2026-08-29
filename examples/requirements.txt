@@ -1,0 +1,6 @@
+# Sadece web ornekleri icin gereklidir; console_app ve ecommerce/main.py
+# hicbir ek paket istemez (py_mediatR sifir bagimlidir).
+fastapi>=0.115
+uvicorn>=0.30
+flask>=3.1
+django>=5.1
