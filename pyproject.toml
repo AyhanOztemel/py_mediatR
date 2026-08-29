@@ -12,7 +12,7 @@ authors = [{ name = "Ayhan Öztemel", email = "ayhanoztemel@hotmail.com" }]
 requires-python = ">=3.10"
 keywords = ["mediatr", "cqrs", "mediator", "pipeline", "di", "dependency-injection", "cancellation", "nogil", "free-threaded"]
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
