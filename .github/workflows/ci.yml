@@ -92,6 +92,42 @@ jobs:
       - name: mypy
         run: python -m mypy src/py_mediatR
 
+  coverage:
+    name: coverage
+    runs-on: ubuntu-latest
+    env:
+      # Both must be absolute because the example runs start from examples/.
+      # Without COVERAGE_RCFILE, coverage looks for pyproject.toml in the cwd,
+      # silently finds none, and falls back to defaults — losing `parallel`, so
+      # each example overwrites the previous data file instead of adding to it.
+      COVERAGE_FILE: ${{ github.workspace }}/.coverage
+      COVERAGE_RCFILE: ${{ github.workspace }}/pyproject.toml
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[coverage]"
+
+      - name: Measure unit tests
+        run: python -m coverage run -m pytest -q
+
+      - name: Measure examples
+        working-directory: examples
+        run: |
+          python -m coverage run console_app/main.py > /dev/null
+          python -m coverage run ecommerce/main.py > /dev/null
+
+      - name: Combine and enforce the floor
+        run: |
+          python -m coverage combine
+          python -m coverage report
+
   web-examples:
     name: web examples
     runs-on: ubuntu-latest
