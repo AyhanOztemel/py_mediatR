@@ -1,0 +1,59 @@
+name: Release
+
+# Publishing is driven by a published GitHub Release, not by a bare tag push.
+# Creating a tag alone does nothing.
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    name: build and publish to PyPI
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Assert the tag matches the packaged version
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: |
+          python - <<'PY'
+          import os, pathlib, tomllib
+          version = tomllib.loads(
+              pathlib.Path("pyproject.toml").read_text(encoding="utf-8")
+          )["project"]["version"]
+          expected, actual = f"v{version}", os.environ["RELEASE_TAG"]
+          assert actual == expected, f"tag is {actual!r}, expected {expected!r}"
+          print(f"tag and version agree: {actual}")
+          PY
+
+      - name: Build
+        run: |
+          python -m pip install --upgrade pip build twine
+          python -m build
+
+      - name: twine check
+        run: python -m twine check dist/*
+
+      - name: Assert py.typed and the lowercase alias ship
+        run: |
+          python - <<'PY'
+          import glob, zipfile
+          names = zipfile.ZipFile(glob.glob("dist/*.whl")[0]).namelist()
+          for required in ("py_mediatR/py.typed", "py_mediatr.py"):
+              assert required in names, f"{required} missing from wheel"
+          print("wheel contents OK")
+          PY
+
+      - name: Publish via Trusted Publishing
+        uses: pypa/gh-action-pypi-publish@release/v1
