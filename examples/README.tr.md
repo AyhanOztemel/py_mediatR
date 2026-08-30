@@ -11,7 +11,7 @@ tarzı, dikey dilimler) paylaşan dört çalıştırılabilir örnek uygulama:
 | **[FastAPI](fastapi_app/README.tr.md)** | `python fastapi_app/app.py` → http://127.0.0.1:8111 | `make_fastapi_mediator_dependency` (istek başına scope'lu mediator), async send, streaming endpoint, `/docs` Swagger |
 | **[Flask](flask_app/README.tr.md)** | `python flask_app/app.py` → http://127.0.0.1:8112 | route içinde senkron `mediator.send()`, scoped servisler için istek başına `create_scope()` |
 | **[Django](django_app/README.tr.md)** | `python django_app/manage.py` → http://127.0.0.1:8113 | Django view'ları içinde mediator, kendi kendine `runserver` başlatır |
-| **Tam kapsam testi** | `python ecommerce/main.py` | ileri düzey: 47 `__all__` export'unun TAMAMINI çalıştıran 71 kontrol (doğrulama aracıdır, eğitim değildir) |
+| **Tam kapsam testi** | `python ecommerce/main.py` | ileri düzey: 52 `__all__` export'unun 46'sını çalıştıran 71 kontrol (doğrulama aracıdır, eğitim değildir) |
 | **Başsız web testi** | `python -m ci_smoke` | üç web uygulamasını sunucu/port açmadan, süreç içi test client'larıyla çalıştırır |
 
 Konsol uygulaması ve kapsam testi için kurulum gerekmez — `../src` dizinini
@@ -83,7 +83,7 @@ examples/
 ├── ci_smoke.py               # üç web uygulaması için başsız sürücü
 ├── requirements.txt          # sadece web framework'leri (kütüphane sıfır bağımlı)
 └── ecommerce/                # PAYLAŞILAN katmanlı çekirdek + tam kapsam testi
-    ├── main.py               # 47 export'un tamamını doğrulayan 71 kontrol
+    ├── main.py               # 71 kontrol, 52 export'un 46'sı
     ├── domain/               # saf entity'ler
     ├── application/
     │   ├── crosscutting/     # behavior'lar, processor'lar, exception handler'lar
