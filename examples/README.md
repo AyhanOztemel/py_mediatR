@@ -11,7 +11,7 @@ Four runnable example apps sharing one layered application core
 | **[FastAPI](fastapi_app/README.md)** | `python fastapi_app/app.py` → http://127.0.0.1:8111 | `make_fastapi_mediator_dependency` (per-request scoped mediator), async send, streaming endpoint, Swagger at `/docs` |
 | **[Flask](flask_app/README.md)** | `python flask_app/app.py` → http://127.0.0.1:8112 | sync `mediator.send()` in routes, `create_scope()` per request for scoped services |
 | **[Django](django_app/README.md)** | `python django_app/manage.py` → http://127.0.0.1:8113 | mediator inside Django views, self-starting `runserver` |
-| **Full coverage suite** | `python ecommerce/main.py` | advanced: 71 assertions exercising 46 of the 52 `__all__` exports (verification tool, not a tutorial) |
+| **Full coverage suite** | `python ecommerce/main.py` | advanced: 81 assertions exercising all 52 `__all__` exports (verification tool, not a tutorial) |
 | **Headless web smoke test** | `python -m ci_smoke` | drives all three web apps through their in-process test clients — no server, no port |
 
 No installation needed for the console app and coverage suite — they add
@@ -78,7 +78,7 @@ examples/
 ├── ci_smoke.py               # headless driver for the three web apps
 ├── requirements.txt          # web frameworks only (library itself has zero deps)
 └── ecommerce/                # SHARED layered core + full coverage suite
-    ├── main.py               # 71-check verification, 46 of 52 exports
+    ├── main.py               # 81-check verification of all 52 exports
     ├── domain/               # pure entities
     ├── application/
     │   ├── crosscutting/     # behaviors, processors, exception handlers

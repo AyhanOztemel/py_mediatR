@@ -41,10 +41,13 @@ Covers every pipeline feature of the library:
      coerce_to_model, standalone discover_handlers/discover_all(_v4),
      container_handler_factory
   28 runtime pipeline mutation (add_*), get_pipeline_info(), reset()
+  29 v6.7: trace_flow/FlowTrace/FlowNode, scoped_mediator,
+     TransactionCleanupError (failed rollback) and SyncBridgeTimeoutError
   (+ IStreamPipelineBehavior asserted in section 12)
 """
 import asyncio
 import logging
+import os
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -62,6 +65,10 @@ from py_mediatR import (  # noqa: E402
     CancellationTokenRegistration,
     CancellationTokenSource,
     DIResolutionError,
+    ExceptionHandlerState,
+    FlowNode,
+    FlowTrace,
+    IExceptionHandler,
     IMediator,
     INotification,
     IPublisher,
@@ -70,7 +77,11 @@ from py_mediatR import (  # noqa: E402
     Mediator,
     OperationCancelledError,
     PublishStrategy,
+    ServiceContainer,
     ServiceScope,
+    SyncBridgeTimeoutError,
+    TransactionBehavior,
+    TransactionCleanupError,
     TResponse,
     UnauthorizedError,
     coerce_to_model,
@@ -79,6 +90,8 @@ from py_mediatR import (  # noqa: E402
     discover_all_v4,
     discover_handlers,
     make_fastapi_mediator_dependency,
+    scoped_mediator,
+    trace_flow,
 )
 
 from ecommerce.application.crosscutting.audit_log import AUDIT  # noqa: E402
@@ -157,6 +170,55 @@ def check(label: str, cond: bool, detail: str = "") -> None:
 
 def banner(title: str) -> None:
     print(f"\n=== {title} " + "=" * max(0, 60 - len(title)))
+
+
+class ExplodingSession:
+    """Session whose rollback() fails, to exercise TransactionCleanupError."""
+
+    def begin(self) -> None: ...
+    def commit(self) -> None: ...
+    def close(self) -> None: ...
+
+    def rollback(self) -> None:
+        raise RuntimeError("rollback refused by the server")
+
+
+class BrokenRollback:
+    transactional = True  # TransactionBehavior only wraps flagged requests
+
+
+class BrokenRollbackHandler:
+    def handle(self, request):
+        raise ValueError("business rule violated")
+
+
+class BridgeStall:
+    pass
+
+
+class BridgeStallHandler:
+    def handle(self, request):
+        raise ValueError("triggers the async exception handler")
+
+
+class SlowRecovery(IExceptionHandler):
+    """Async exception handler. On the sync send() path it has to cross the
+    sync-over-async bridge, which is the only place the budget applies."""
+
+    exception_type = ValueError
+
+    async def handle(self, request, exception, state: ExceptionHandlerState):
+        await asyncio.sleep(5)
+        state.set_handled("never reached")
+
+
+async def _stall_on_the_sync_bridge():
+    """Calling the synchronous send() from inside a running loop is what forces
+    the async exception handler onto the bridge, where the budget can expire."""
+    m_br = Mediator(auto_discover=False)
+    m_br.register_handler(BridgeStall, BridgeStallHandler())
+    m_br.add_exception_handler(SlowRecovery())
+    return m_br.send(BridgeStall())
 
 
 async def async_part2(mediator, container) -> None:
@@ -561,6 +623,62 @@ def main() -> int:
     m_rt.reset()
     check("reset() clears all registrations",
           len(m_rt.get_registered_handlers()) == 0)
+
+    banner("29 v6.7 tracing, scoped_mediator and the two new error types")
+    m_tr = Mediator(auto_discover=False)
+    m_tr.register_handler(CancelOrder, CancelOrderHandler())
+    with trace_flow() as flow:
+        m_tr.send(CancelOrder(order_id="ORD-TRACE"))
+    check("trace_flow() yields a FlowTrace", isinstance(flow, FlowTrace))
+    check("FlowTrace.roots holds FlowNode objects",
+          bool(flow.roots) and isinstance(flow.roots[0], FlowNode), repr(flow.roots))
+    check("root node is the send() of CancelOrder",
+          flow.roots[0].kind == "send" and flow.roots[0].label == "CancelOrder",
+          f"{flow.roots[0].kind}/{flow.roots[0].label}")
+    check("FlowTrace.steps() flattens the tree", len(flow.steps()) >= 1,
+          str(len(flow.steps())))
+    check("FlowTrace.find() hits by label and returns None when absent",
+          isinstance(flow.find("CancelOrder"), FlowNode)
+          and flow.find("NoSuchLabel") is None)
+    check("FlowTrace.render() draws the call tree",
+          flow.render(show_timing=False).startswith("send(CancelOrder)"),
+          flow.render(show_timing=False)[:40])
+
+    # Until v6.7 a failing rollback was swallowed, so the caller saw only the
+    # business error and reasonably assumed the write had been undone.
+    m_tx = Mediator(auto_discover=False)
+    m_tx.register_handler(BrokenRollback, BrokenRollbackHandler())
+    m_tx.add_behavior(TransactionBehavior(ExplodingSession,
+                                          raise_on_cleanup_failure=True))
+    try:
+        m_tx.send(BrokenRollback())
+        check("TransactionCleanupError surfaces a failed rollback", False,
+              "no exception raised")
+    except TransactionCleanupError as exc:
+        check("TransactionCleanupError surfaces a failed rollback",
+              isinstance(exc.__cause__, RuntimeError)
+              and "rollback" in str(exc).lower(), repr(exc.__cause__))
+
+    check("SyncBridgeTimeoutError is a TimeoutError",
+          issubclass(SyncBridgeTimeoutError, TimeoutError))
+    os.environ["MEDIATR_SYNC_BRIDGE_TIMEOUT"] = "0.3"
+    try:
+        asyncio.run(_stall_on_the_sync_bridge())
+        check("sync bridge gives up on a stalled async exception handler", False,
+              "no exception raised")
+    except SyncBridgeTimeoutError:
+        check("sync bridge gives up on a stalled async exception handler", True)
+    finally:
+        os.environ.pop("MEDIATR_SYNC_BRIDGE_TIMEOUT", None)
+
+    sc_container = ServiceContainer()
+    m_sc = Mediator(auto_discover=False, handler_factory=sc_container)
+    m_sc.register_handler(CancelOrder, CancelOrderHandler())
+    with scoped_mediator(m_sc, sc_container) as scoped:
+        sc_resp = scoped.send(CancelOrder(order_id="ORD-SCOPED"))
+    check("scoped_mediator() yields a distinct, working Mediator",
+          isinstance(scoped, Mediator) and scoped is not m_sc
+          and sc_resp.status == "CANCELLED", repr(sc_resp))
 
     asyncio.run(async_part2(mediator, container))
 
