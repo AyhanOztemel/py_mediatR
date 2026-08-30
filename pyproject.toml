@@ -58,3 +58,12 @@ py_mediatR = ["py.typed"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.mypy]
+
+# pydantic is optional and guarded by try/except ImportError, so the type
+# checker must not require it to be installed. _PydBaseModel is Any either
+# way, so nothing is lost by not resolving the real class.
+[[tool.mypy.overrides]]
+module = ["pydantic"]
+ignore_missing_imports = true
