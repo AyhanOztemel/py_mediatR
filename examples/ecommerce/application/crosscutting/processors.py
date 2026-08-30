@@ -1,6 +1,5 @@
-# -*- coding: utf-8 -*-
 """Pre/post processors — run before/after the handler, inside all behaviors."""
-from py_mediatR import IRequestPreProcessor, IRequestPostProcessor
+from py_mediatR import IRequestPostProcessor, IRequestPreProcessor
 
 from ecommerce.application.crosscutting.audit_log import AUDIT
 

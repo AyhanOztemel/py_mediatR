@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "py-mediatR"
-version = "6.7.0"
+version = "6.7.1"
 description = ".NET MediatR-inspired high-performance CQRS/Mediator for Python: async pipeline, notifications, streaming, DI (singleton/scoped/transient), CancellationToken, auto-discovery, free-threaded (no-GIL) ready."
 readme = "README.md"
 license = { file = "LICENSE" }
@@ -34,13 +34,17 @@ pydantic = ["pydantic>=1.10"]
 # Test-only, deliberately free of anything that needs a compiler: twine pulls in
 # nh3 (Rust), which has no free-threaded wheel and cannot build on 3.13t.
 test = ["pytest>=7", "pytest-asyncio>=0.23"]
+# Deliberately separate from `test` and `dev`, both of which run on 3.10 and on
+# free-threaded builds: mypy pulls in ast-serialize (PyO3), which requires
+# CPython 3.11+. Pinned so a new mypy release cannot turn CI red on its own.
+typecheck = ["mypy==2.3.1"]
 dev = ["pytest>=7", "pytest-asyncio>=0.23", "build", "twine"]
 
 [project.urls]
 Homepage = "https://github.com/AyhanOztemel/py_mediatR"
 Source = "https://github.com/AyhanOztemel/py_mediatR"
 Issues = "https://github.com/AyhanOztemel/py_mediatR/issues"
-Changelog = "https://github.com/AyhanOztemel/py_mediatR/blob/main/README.md"
+Changelog = "https://github.com/AyhanOztemel/py_mediatR/blob/main/CHANGELOG.md"
 
 [tool.setuptools.packages.find]
 where = ["src"]

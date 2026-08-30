@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Users feature — queries. Shows dict -> dataclass coercion: the handler
 returns a plain dict and py_mediatR coerces it into GetUserResponse."""
 from dataclasses import dataclass

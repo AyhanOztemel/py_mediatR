@@ -1,11 +1,13 @@
-# -*- coding: utf-8 -*-
 """Custom pipeline behavior + validator (wired explicitly in bootstrap.py,
 NOT auto-discovered)."""
 import inspect
 
 from py_mediatR import (
-    IPipelineBehavior, IStreamPipelineBehavior, IValidator,
-    RequestHandlerDelegate, StreamHandlerDelegate,
+    IPipelineBehavior,
+    IStreamPipelineBehavior,
+    IValidator,
+    RequestHandlerDelegate,
+    StreamHandlerDelegate,
 )
 
 from ecommerce.application.crosscutting.audit_log import AUDIT

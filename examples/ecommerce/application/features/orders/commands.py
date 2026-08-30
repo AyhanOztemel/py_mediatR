@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Orders feature — commands. `transactional = True` activates
 TransactionBehavior (begin/commit on success, rollback on failure)."""
 from dataclasses import dataclass

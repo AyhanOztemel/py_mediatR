@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """py_mediatR.discovery — handler auto-discovery and project scanning.
 
 v6.7.0'da tek dosyalik `py_mediatR.py` alt modullere ayrildi.
@@ -6,31 +5,36 @@ Kod govdesi birebir aynidir. Genel API icin `import py_mediatR` kullanin;
 bu modul bir uygulama detayidir ve dogrudan import edilmesi gerekmez.
 """
 
-import inspect
-import sys
-import os
-import asyncio
-import contextvars
-import importlib
-import logging
-import random
-import time
-import json
 import hashlib
-from enum import Enum
-from pathlib import Path
-from contextlib import contextmanager
-from typing import (
-    Dict, List, Type, Tuple, Any, Iterable, Callable, Optional, Awaitable,
-    AsyncIterator, Iterator, Union, Generic, TypeVar, get_type_hints,
-    get_args, get_origin,
-)
-from dataclasses import is_dataclass, fields
-from functools import lru_cache
+import importlib
+import inspect
+import json
+import logging
+import os
+import sys
+import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from threading import Lock, RLock, Thread
+from functools import lru_cache
+from pathlib import Path
+from threading import Lock
+from typing import (
+    Any,
+    Dict,
+    Iterable,
+    List,
+    Optional,
+    Tuple,
+    Type,
+    get_type_hints,
+)
 
 from ._config import _debug_log
+from ._typechecks import (  # noqa: F401
+    _is_notification_type,
+    _is_request_type,
+    _is_response_type,
+    _is_stream_request_type,
+)
 from .contracts import (  # noqa: F401
     INotification,
     IRequest,
@@ -38,13 +42,6 @@ from .contracts import (  # noqa: F401
     IStreamRequest,
     _DeferredHandler,
 )
-from ._typechecks import (  # noqa: F401
-    _is_notification_type,
-    _is_request_type,
-    _is_response_type,
-    _is_stream_request_type,
-)
-
 
 # ============================================================================
 # PROJECT ROOT DETECTION (CACHED) — v3 ile aynı
@@ -166,7 +163,7 @@ def _find_notification_param(cls_name: str, module_name: str) -> Optional[Type]:
 
 
 def _infer_response_by_naming(req_type: Type[IRequest],
-                              module_dict: dict) -> Optional[Type[IResponse]]:
+                              module_dict: Optional[dict]) -> Optional[Type[IResponse]]:
     req_name = getattr(req_type, "__name__", "")
     cand = req_name[:-7] + "Response" if req_name.endswith("Request") else req_name + "Response"
     resp_cls = module_dict.get(cand) if module_dict else None
@@ -644,7 +641,7 @@ def _run_discovery(
                 json.dump({"format": "v6.4", "req": req_p, "stream": stream_p,
                            "notif": notif_p, "key": current_key,
                            "files": file_strs}, f)
-            _debug_log(f"💾 Cache saved (v6.4 JSON format)")
+            _debug_log("💾 Cache saved (v6.4 JSON format)")
         except Exception as e:
             _debug_log(f"⚠️ Cache save failed: {e}")
 

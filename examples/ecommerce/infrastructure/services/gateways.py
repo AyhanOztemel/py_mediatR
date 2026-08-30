@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """External-service gateways (fakes) — injected into handlers via DI."""
 from ecommerce.application.crosscutting.audit_log import AUDIT
 

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Reports feature — streaming (IStreamRequest -> async generator handler).
 Consumed with `async for` via mediator.create_stream()."""
 import asyncio

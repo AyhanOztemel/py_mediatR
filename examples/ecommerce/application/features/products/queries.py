@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Products feature — caching demos.
 
 * SearchProducts: `cacheable = True` dataclass -> CachingBehavior builds a

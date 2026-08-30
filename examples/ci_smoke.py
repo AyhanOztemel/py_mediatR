@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Headless smoke test for the three web examples.
 
 Drives FastAPI, Flask and Django through their in-process test clients and
@@ -32,7 +31,6 @@ def check(label: str, payload: dict) -> None:
 
 def run_fastapi() -> None:
     from fastapi.testclient import TestClient
-
     from fastapi_app.app import app
 
     client = TestClient(app)

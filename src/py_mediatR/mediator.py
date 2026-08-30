@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """py_mediatR.mediator — Mediator, ISender / IPublisher, pipeline compilation.
 
 v6.7.0'da tek dosyalik `py_mediatR.py` alt modullere ayrildi.
@@ -6,32 +5,32 @@ Kod govdesi birebir aynidir. Genel API icin `import py_mediatR` kullanin;
 bu modul bir uygulama detayidir ve dogrudan import edilmesi gerekmez.
 """
 
-import inspect
-import sys
-import os
 import asyncio
-import contextvars
-import importlib
+import inspect
 import logging
-import random
-import time
-import json
-import hashlib
-from enum import Enum
-from pathlib import Path
 from contextlib import contextmanager
-from typing import (
-    Dict, List, Type, Tuple, Any, Iterable, Callable, Optional, Awaitable,
-    AsyncIterator, Iterator, Union, Generic, TypeVar, get_type_hints,
-    get_args, get_origin,
-)
-from dataclasses import is_dataclass, fields
 from functools import lru_cache
-from concurrent.futures import ThreadPoolExecutor, as_completed
-from threading import Lock, RLock, Thread
+from threading import Lock
+from typing import (
+    Any,
+    AsyncIterator,
+    Awaitable,
+    Callable,
+    Dict,
+    List,
+    Optional,
+    Protocol,
+    Tuple,
+    Type,
+)
 
 from ._config import _BACKGROUND_TASKS, _debug_log
+from ._typechecks import _is_async_callable, _is_response_type, _is_stream_request_type
+from .cancellation import _CURRENT_CT, CancellationToken, _invoke_handle
+from .coercion import _maybe_await, _sync_run_coro, coerce_to_model
 from .contracts import (  # noqa: F401
+    _EXPLICIT_BEHAVIORS,
+    _EXPLICIT_HANDLERS,
     IExceptionAction,
     IExceptionHandler,
     INotification,
@@ -45,21 +44,13 @@ from .contracts import (  # noqa: F401
     PublishStrategy,
     TResponse,
     _DeferredHandler,
-    _EXPLICIT_BEHAVIORS,
-    _EXPLICIT_HANDLERS,
-    behavior,
-    handler,
 )
-from ._typechecks import _is_async_callable, _is_response_type, _is_stream_request_type
-from .tracing import FlowNode, _FLOW, _flow_begin, _flow_end, _flow_note, trace_flow
-from .coercion import _maybe_await, _sync_run_coro, coerce_to_model
-from .cancellation import _CURRENT_CT, _invoke_handle
 from .discovery import (  # noqa: F401
     _find_request_param_and_return_type,
     _instantiate_or_defer,
     discover_all,
 )
-
+from .tracing import _FLOW, FlowNode, _flow_begin, _flow_end, _flow_note, trace_flow
 
 # ============================================================================
 # SENDER / PUBLISHER INTERFACES (.NET ISender / IPublisher parity)
@@ -106,6 +97,14 @@ class IMediator(ISender, IPublisher):
     pass
 
 
+class _ServiceContainerLike(Protocol):
+    """Minimal container contract needed by :meth:`Mediator.create_scope`."""
+
+    def create_scope(self) -> Any:
+        """Create a disposable service scope."""
+        ...
+
+
 # ============================================================================
 # MEDIATOR
 # ============================================================================
@@ -141,7 +140,7 @@ class ExceptionHandlerState:
 
 
 @lru_cache(maxsize=512)
-def _exc_handler_accepts_state(handler_cls: type) -> bool:
+def _exc_handler_accepts_state(handler_cls: Any) -> bool:
     """handle() imzasında 3. parametre (state) var mı? (cached)"""
     try:
         params = [p for p in inspect.signature(handler_cls.handle).parameters.values()
@@ -162,7 +161,7 @@ def _invoke_exception_handler(eh: Any, request: Any, exc: BaseException):
       • 2 parametreli (legacy) → dönüş None DEĞİLSE handled sayılır
     Async handler'lar için awaitable döner; çağıran await edip aynı kurala uyar.
     """
-    if _exc_handler_accepts_state(type(eh)):
+    if _exc_handler_accepts_state(type(eh)):  # type: ignore[arg-type]
         state = ExceptionHandlerState()
         result = eh.handle(request, exc, state)
         if inspect.isawaitable(result):
@@ -409,6 +408,7 @@ class Mediator(IMediator):
                     "  3. Handlers are in discoverable directories\n"
                     "  4. No import errors (set MEDIATR_DEBUG=1 for logs)",
                     RuntimeWarning,
+                    stacklevel=2,
                 )
             else:
                 _debug_log(
@@ -775,7 +775,7 @@ class Mediator(IMediator):
                 finally:
                     _flow_end(sp)
 
-                if inspect.isawaitable(result):
+                if inspect.iscoroutine(result):
                     result.close()  # RuntimeWarning'i önle
                     raise TypeError(
                         f"{type(h).__name__}.handle is async; use publish_async().")
@@ -905,10 +905,10 @@ class Mediator(IMediator):
         finally:
             _CURRENT_CT.reset(tok)
 
-    def create_scope(self, container: "ServiceContainer"):
+    def create_scope(self, container: _ServiceContainerLike):
         """v6.2: `with mediator.create_scope(container) as m: m.send(...)`"""
         from .di import scoped_mediator  # deferred: di imports Mediator
-        return scoped_mediator(self, container)
+        return scoped_mediator(self, container)  # type: ignore[arg-type]
 
     def trace(self):
         """
@@ -961,7 +961,7 @@ class Mediator(IMediator):
                 _flow_end(sp)
         results = await asyncio.gather(
             *[_run(h) for h in handlers], return_exceptions=True)
-        errors = [(h, r) for h, r in zip(handlers, results)
+        errors = [(h, r) for h, r in zip(handlers, results, strict=True)
                   if isinstance(r, Exception)]
         if errors and not self._swallow_notification_errors:
             # İlk hatayı fırlat
@@ -1077,10 +1077,10 @@ class Mediator(IMediator):
             resolve = self._make_resolver(handler)  # v6: DI/lifetime çözücü
 
             def core(request):
-                for p in applicable_pre:
-                    sp = _flow_begin("pre", type(p).__name__)
+                for pre_processor in applicable_pre:
+                    sp = _flow_begin("pre", type(pre_processor).__name__)
                     try:
-                        p.process(request)
+                        pre_processor.process(request)
                     finally:
                         _flow_end(sp)
                 actual = resolve()
@@ -1092,10 +1092,10 @@ class Mediator(IMediator):
                     raise
                 _flow_end(sp)
                 coerced = coerce_to_model(result, resp_type) if resp_type else result
-                for p in applicable_post:
-                    sp = _flow_begin("post", type(p).__name__)
+                for post_processor in applicable_post:
+                    sp = _flow_begin("post", type(post_processor).__name__)
                     try:
-                        p.process(request, coerced)
+                        post_processor.process(request, coerced)
                     finally:
                         _flow_end(sp)
                 return coerced
@@ -1176,10 +1176,10 @@ class Mediator(IMediator):
             resolve = self._make_resolver(handler)  # v6: DI/lifetime çözücü
 
             async def core(request):
-                for p in applicable_pre:
-                    sp = _flow_begin("pre", type(p).__name__)
+                for pre_processor in applicable_pre:
+                    sp = _flow_begin("pre", type(pre_processor).__name__)
                     try:
-                        await _maybe_await(p.process(request))
+                        await _maybe_await(pre_processor.process(request))
                     finally:
                         _flow_end(sp)
                 actual = resolve()
@@ -1191,10 +1191,10 @@ class Mediator(IMediator):
                     raise
                 _flow_end(sp)
                 coerced = coerce_to_model(result, resp_type) if resp_type else result
-                for p in applicable_post:
-                    sp = _flow_begin("post", type(p).__name__)
+                for post_processor in applicable_post:
+                    sp = _flow_begin("post", type(post_processor).__name__)
                     try:
-                        await _maybe_await(p.process(request, coerced))
+                        await _maybe_await(post_processor.process(request, coerced))
                     finally:
                         _flow_end(sp)
                 return coerced

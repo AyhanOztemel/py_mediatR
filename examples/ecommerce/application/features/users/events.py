@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Users feature — notification (pub/sub) with ORDERED sync subscribers.
 `order` controls execution order under PublishStrategy.SEQUENTIAL."""
 from dataclasses import dataclass

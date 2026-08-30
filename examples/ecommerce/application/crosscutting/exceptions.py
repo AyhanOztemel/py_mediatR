@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Exception handling components.
 
 * InvoiceNotFoundHandler — modern v6.4+ STATE-BASED handler:
@@ -7,7 +6,7 @@
 * AlertExceptionAction — observes every exception WITHOUT swallowing it
   (.NET IRequestExceptionAction equivalent).
 """
-from py_mediatR import IExceptionHandler, IExceptionAction, ExceptionHandlerState
+from py_mediatR import ExceptionHandlerState, IExceptionAction, IExceptionHandler
 
 from ecommerce.application.crosscutting.audit_log import AUDIT
 from ecommerce.application.features.billing.commands import FindInvoiceResponse

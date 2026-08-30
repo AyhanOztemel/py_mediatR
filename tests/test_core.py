@@ -1,12 +1,17 @@
 import asyncio
 
 import pytest
-
 from py_mediatR import (
-    Mediator, IRequest, IStreamRequest, INotification,
-    ServiceContainer, ServiceScope, DIResolutionError, scoped_mediator,
-    CancellationToken, CancellationTokenSource, OperationCancelledError,
+    CancellationTokenSource,
+    DIResolutionError,
+    INotification,
+    IRequest,
+    IStreamRequest,
+    Mediator,
+    OperationCancelledError,
+    ServiceContainer,
     current_cancellation_token,
+    scoped_mediator,
 )
 
 
@@ -144,7 +149,7 @@ def test_linked_tokens():
 
 from dataclasses import dataclass, field
 
-from py_mediatR import IPipelineBehavior, IExceptionHandler, CachingBehavior
+from py_mediatR import CachingBehavior, IExceptionHandler, IPipelineBehavior
 
 
 def test_notification_errors_propagate_by_default(mediator):
@@ -332,8 +337,8 @@ def test_override_handler_non_lifo():
 
 # ---- v6.6 regression tests --------------------------------------------------
 
-from py_mediatR import (IPipelineBehavior as _IPB, IRequestPreProcessor,
-                        IRequestPostProcessor, current_cancellation_token)
+from py_mediatR import IPipelineBehavior as _IPB
+from py_mediatR import IRequestPostProcessor, IRequestPreProcessor
 
 
 def test_cache_fixed_hash_no_collision():

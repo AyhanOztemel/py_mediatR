@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Users feature — commands.
 
 Shows: request.validate() (ValidationBehavior), requires_permission

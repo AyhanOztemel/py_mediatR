@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """py_mediatR.contracts — public base types, marker interfaces, decorators.
 
 v6.7.0'da tek dosyalik `py_mediatR.py` alt modullere ayrildi.
@@ -7,30 +6,19 @@ bu modul bir uygulama detayidir ve dogrudan import edilmesi gerekmez.
 """
 
 import inspect
-import sys
-import os
-import asyncio
-import contextvars
-import importlib
-import logging
-import random
-import time
-import json
-import hashlib
 from enum import Enum
-from pathlib import Path
-from contextlib import contextmanager
 from typing import (
-    Dict, List, Type, Tuple, Any, Iterable, Callable, Optional, Awaitable,
-    AsyncIterator, Iterator, Union, Generic, TypeVar, get_type_hints,
-    get_args, get_origin,
+    Any,
+    AsyncIterator,
+    Awaitable,
+    Callable,
+    Generic,
+    List,
+    Optional,
+    Tuple,
+    Type,
+    TypeVar,
 )
-from dataclasses import is_dataclass, fields
-from functools import lru_cache
-from concurrent.futures import ThreadPoolExecutor, as_completed
-from threading import Lock, RLock, Thread
-
-
 
 # ============================================================================
 # BASE TYPES (v3/v4 uyumlu + YENİ stream/abstraction'lar)
@@ -185,7 +173,7 @@ class IRequestPreProcessor:
     order: int = 0
     applies_to: Optional[Type[IRequest]] = None
 
-    def process(self, request: IRequest) -> None:
+    def process(self, request: IRequest) -> Awaitable[None] | None:
         raise NotImplementedError
 
 
@@ -204,7 +192,7 @@ class IRequestPostProcessor:
     order: int = 0
     applies_to: Optional[Type[IRequest]] = None
 
-    def process(self, request: IRequest, response: Any) -> None:
+    def process(self, request: IRequest, response: Any) -> Awaitable[None] | None:
         raise NotImplementedError
 
 

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Fake DB session used by TransactionBehavior. The factory opens the
 transaction; the behavior calls commit (success) / rollback (error) + close."""
 from ecommerce.application.crosscutting.audit_log import AUDIT

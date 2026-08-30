@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Explicit (decorator) registration — the alternative to auto-discovery.
 
 This module is deliberately OUTSIDE the auto-discovery scan path
@@ -9,7 +8,7 @@ decorators run before the Mediator is constructed.
 """
 from dataclasses import dataclass
 
-from py_mediatR import IRequest, IResponse, IPipelineBehavior, handler, behavior
+from py_mediatR import IPipelineBehavior, IRequest, IResponse, behavior, handler
 
 from ecommerce.application.crosscutting.audit_log import AUDIT
 

@@ -1,9 +1,8 @@
-# -*- coding: utf-8 -*-
 """Repositories — registered in the ServiceContainer with different lifetimes."""
 import itertools
 from typing import Dict, Optional
 
-from ecommerce.domain.entities import User, Order
+from ecommerce.domain.entities import Order, User
 
 _scope_counter = itertools.count(1)
 

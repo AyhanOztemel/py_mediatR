@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """py_mediatR — Django ornegi (kendi kendine calisir).
 
 Calistirma:  python django_app/manage.py   (examples/ klasorunden)

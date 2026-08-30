@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Reports feature — async handlers, ambient CancellationToken, performance.
 
 * FetchExchangeRates: ASYNC handler that also reads the ambient
@@ -11,7 +10,10 @@ import time
 from dataclasses import dataclass
 
 from py_mediatR import (
-    IRequest, IResponse, CancellationToken, current_cancellation_token,
+    CancellationToken,
+    IRequest,
+    IResponse,
+    current_cancellation_token,
 )
 
 
@@ -86,7 +88,7 @@ class LongJobHandler:
 
     async def handle(self, req: LongJob) -> int:
         token = current_cancellation_token()
-        for i in range(req.steps):
+        for _i in range(req.steps):
             token.throw_if_cancellation_requested()
             await asyncio.sleep(0.005)
         return req.steps

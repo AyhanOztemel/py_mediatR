@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """py_mediatR — Flask ornegi.
 
 Calistirma:  python flask_app/app.py   (examples/ klasorunden)
@@ -21,14 +20,13 @@ logging.getLogger("mediatr").setLevel(logging.CRITICAL)
 
 from dataclasses import asdict
 
-from flask import Flask, jsonify, request
-
-from ecommerce.composition.bootstrap import build_container, build_mediator
-from ecommerce.application.features.users.commands import CreateUser
-from ecommerce.application.features.users.queries import GetUser
-from ecommerce.application.features.products.queries import SearchProducts
 from ecommerce.application.features.billing.commands import FindInvoice
 from ecommerce.application.features.orders.commands import PlaceOrder
+from ecommerce.application.features.products.queries import SearchProducts
+from ecommerce.application.features.users.commands import CreateUser
+from ecommerce.application.features.users.queries import GetUser
+from ecommerce.composition.bootstrap import build_container, build_mediator
+from flask import Flask, jsonify, request
 
 container = build_container()
 mediator = build_mediator(container)

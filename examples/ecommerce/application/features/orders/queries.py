@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Orders feature — queries."""
 from dataclasses import dataclass
 

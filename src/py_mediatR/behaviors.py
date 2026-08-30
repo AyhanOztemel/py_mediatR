@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """py_mediatR.behaviors — built-in pipeline behaviors.
 
 v6.7.0'da tek dosyalik `py_mediatR.py` alt modullere ayrildi.
@@ -6,35 +5,27 @@ Kod govdesi birebir aynidir. Genel API icin `import py_mediatR` kullanin;
 bu modul bir uygulama detayidir ve dogrudan import edilmesi gerekmez.
 """
 
-import inspect
-import sys
-import os
 import asyncio
-import contextvars
-import importlib
+import inspect
 import logging
 import random
 import time
-import json
-import hashlib
-from enum import Enum
-from pathlib import Path
-from contextlib import contextmanager
+from dataclasses import fields, is_dataclass
+from threading import RLock
 from typing import (
-    Dict, List, Type, Tuple, Any, Iterable, Callable, Optional, Awaitable,
-    AsyncIterator, Iterator, Union, Generic, TypeVar, get_type_hints,
-    get_args, get_origin,
+    Any,
+    Callable,
+    Dict,
+    List,
+    Optional,
+    Tuple,
+    Type,
 )
-from dataclasses import is_dataclass, fields
-from functools import lru_cache
-from concurrent.futures import ThreadPoolExecutor, as_completed
-from threading import Lock, RLock, Thread
 
 from ._config import _debug_log
+from .coercion import _maybe_await, _sync_run_coro
 from .contracts import IPipelineBehavior, IRequest, IValidator, UnauthorizedError
 from .tracing import _flow_note
-from .coercion import _maybe_await, _sync_run_coro
-
 
 # ============================================================================
 # BUILT-IN PIPELINE BEHAVIORS (hazır cross-cutting concerns)
@@ -358,7 +349,7 @@ class RetryBehavior(IPipelineBehavior):
                 return await _maybe_await(next_handler())
             except self.on_exceptions as e:
                 last_exc = e
-        raise last_exc  # type: ignore[misc]
+        raise last_exc
 
 
 class TransactionCleanupError(RuntimeError):
@@ -456,7 +447,7 @@ class TransactionBehavior(IPipelineBehavior):
             return
         try:
             res = cl()
-            if inspect.isawaitable(res):
+            if inspect.iscoroutine(res):
                 res.close()  # never awaited -> avoid 'never awaited' warning
         except Exception as e:  # noqa: BLE001
             self.logger.warning("Could not close abandoned session %s: %s",
@@ -617,7 +608,7 @@ class TracingBehavior(IPipelineBehavior):
     def __init__(self, tracer: Any = None, service_name: str = "py_mediatR") -> None:
         if tracer is None:
             try:
-                from opentelemetry import trace  # opsiyonel bağımlılık
+                from opentelemetry import trace  # type: ignore[import-not-found]
                 tracer = trace.get_tracer(service_name)
             except ImportError:
                 tracer = None

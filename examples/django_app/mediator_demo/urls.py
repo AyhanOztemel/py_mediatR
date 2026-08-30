@@ -1,7 +1,11 @@
 from django.urls import path
-
 from examples.django_app.mediator_demo.views import (
-    index, user_olustur, user_getir, product_ara, invoice_bul, order_ver,
+    index,
+    invoice_bul,
+    order_ver,
+    product_ara,
+    user_getir,
+    user_olustur,
 )
 
 urlpatterns = [

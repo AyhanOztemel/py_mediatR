@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Minimal Django ayarlari — sadece demo icin."""
 SECRET_KEY = "local-demo-only"
 DEBUG = True

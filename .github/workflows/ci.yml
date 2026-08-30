@@ -74,6 +74,24 @@ jobs:
         working-directory: examples
         run: python ecommerce/main.py
 
+  typecheck:
+    name: mypy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[typecheck]"
+
+      - name: mypy
+        run: python -m mypy src/py_mediatR
+
   web-examples:
     name: web examples
     runs-on: ubuntu-latest

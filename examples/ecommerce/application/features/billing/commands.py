@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Billing feature — retry + exception-handling demos.
 
 * ChargeCard: PaymentGateway fails twice -> RetryBehavior retries until OK.

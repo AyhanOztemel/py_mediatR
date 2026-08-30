@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Composition root — DI container + Mediator wiring.
 
 Everything cross-cutting is assembled HERE, in one place:
@@ -14,27 +13,40 @@ import logging
 from pathlib import Path
 
 from py_mediatR import (
-    Mediator, ServiceContainer, PublishStrategy,
-    LoggingBehavior, TracingBehavior, PerformanceBehavior,
-    AuthorizationBehavior, ValidationBehavior, CachingBehavior,
-    RetryBehavior, TransactionBehavior,
+    AuthorizationBehavior,
+    CachingBehavior,
+    LoggingBehavior,
+    Mediator,
+    PerformanceBehavior,
+    PublishStrategy,
+    RetryBehavior,
+    ServiceContainer,
+    TracingBehavior,
+    TransactionBehavior,
+    ValidationBehavior,
 )
 
-from ecommerce.application.crosscutting.behaviors import (
-    AuditTrailBehavior, StreamAuditBehavior, SearchKeywordValidator,
-)
 # Importing this module runs the @handler/@behavior decorators BEFORE the
 # Mediator is built (explicit registration path — see the module docstring).
 import ecommerce.application.explicit_registrations  # noqa: F401
-from ecommerce.application.crosscutting.processors import (
-    AuditPreProcessor, MetricsPostProcessor,
+from ecommerce.application.crosscutting.behaviors import (
+    AuditTrailBehavior,
+    SearchKeywordValidator,
+    StreamAuditBehavior,
 )
 from ecommerce.application.crosscutting.exceptions import (
-    InvoiceNotFoundHandler, AlertExceptionAction,
+    AlertExceptionAction,
+    InvoiceNotFoundHandler,
+)
+from ecommerce.application.crosscutting.processors import (
+    AuditPreProcessor,
+    MetricsPostProcessor,
 )
 from ecommerce.application.features.products.queries import SearchProducts
 from ecommerce.infrastructure.persistence.repositories import (
-    InMemoryUserRepository, OrderUnitOfWork, AuditWriter,
+    AuditWriter,
+    InMemoryUserRepository,
+    OrderUnitOfWork,
 )
 from ecommerce.infrastructure.persistence.session import session_factory
 from ecommerce.infrastructure.services.gateways import EmailGateway, PaymentGateway

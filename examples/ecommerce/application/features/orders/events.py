@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Orders feature — async notification subscribers.
 Used with PublishStrategy.SEQUENTIAL and PARALLEL_WHENALL in main.py."""
 import asyncio

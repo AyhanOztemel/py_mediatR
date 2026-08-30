@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """py_mediatR.coercion — dict->model coercion and the sync-over-async bridge.
 
 v6.7.0'da tek dosyalik `py_mediatR.py` alt modullere ayrildi.
@@ -6,31 +5,19 @@ Kod govdesi birebir aynidir. Genel API icin `import py_mediatR` kullanin;
 bu modul bir uygulama detayidir ve dogrudan import edilmesi gerekmez.
 """
 
-import inspect
-import sys
-import os
 import asyncio
-import contextvars
-import importlib
-import logging
-import random
-import time
-import json
-import hashlib
-from enum import Enum
-from pathlib import Path
-from contextlib import contextmanager
+import inspect
+import os
+from dataclasses import fields, is_dataclass
+from threading import Thread
 from typing import (
-    Dict, List, Type, Tuple, Any, Iterable, Callable, Optional, Awaitable,
-    AsyncIterator, Iterator, Union, Generic, TypeVar, get_type_hints,
-    get_args, get_origin,
+    Any,
+    Dict,
+    Optional,
+    Type,
 )
-from dataclasses import is_dataclass, fields
-from functools import lru_cache
-from concurrent.futures import ThreadPoolExecutor, as_completed
-from threading import Lock, RLock, Thread
 
-from ._config import SYNC_BRIDGE_TIMEOUT_DEFAULT, _PydBaseModel, _UNSET
+from ._config import _UNSET, SYNC_BRIDGE_TIMEOUT_DEFAULT, _PydBaseModel
 
 
 def coerce_to_model(value: Any, target: Type) -> Any:

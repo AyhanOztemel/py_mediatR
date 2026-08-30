@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """py_mediatR — FastAPI ornegi.
 
 Calistirma:  python fastapi_app/app.py   (examples/ klasorunden)
@@ -19,17 +18,16 @@ for p in (str(EXAMPLES_DIR), str(REPO_SRC)):
 
 logging.getLogger("mediatr").setLevel(logging.CRITICAL)
 
+from ecommerce.application.features.billing.commands import FindInvoice
+from ecommerce.application.features.orders.commands import PlaceOrder
+from ecommerce.application.features.products.queries import SearchProducts
+from ecommerce.application.features.reports.streaming import StreamOrderFeed
+from ecommerce.application.features.users.commands import CreateUser
+from ecommerce.application.features.users.queries import GetUser
+from ecommerce.composition.bootstrap import build_container, build_mediator
 from fastapi import Depends, FastAPI
 from fastapi.responses import HTMLResponse
 from py_mediatR import Mediator, make_fastapi_mediator_dependency
-
-from ecommerce.composition.bootstrap import build_container, build_mediator
-from ecommerce.application.features.users.commands import CreateUser
-from ecommerce.application.features.users.queries import GetUser
-from ecommerce.application.features.products.queries import SearchProducts
-from ecommerce.application.features.billing.commands import FindInvoice
-from ecommerce.application.features.orders.commands import PlaceOrder
-from ecommerce.application.features.reports.streaming import StreamOrderFeed
 
 container = build_container()
 base_mediator = build_mediator(container)

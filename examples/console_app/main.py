@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """py_mediatR — basit ve anlasilir konsol ornegi.
 
 Calistirma:  python console_app/main.py   (examples/ klasorunden)
@@ -20,19 +19,20 @@ for p in (str(EXAMPLES_DIR), str(REPO_SRC)):
 logging.basicConfig(level=logging.WARNING)
 logging.getLogger("mediatr").setLevel(logging.CRITICAL)
 
-from py_mediatR import (
-    UnauthorizedError, CancellationTokenSource, OperationCancelledError,
-)
-
-from ecommerce.composition.bootstrap import build_container, build_mediator
 from ecommerce.application.crosscutting.audit_log import AUDIT
-from ecommerce.application.features.users.commands import CreateUser, DeleteUser
-from ecommerce.application.features.users.queries import GetUser
-from ecommerce.application.features.users.events import UserRegistered
-from ecommerce.application.features.products.queries import SearchProducts, CALL_COUNTS
 from ecommerce.application.features.billing.commands import ChargeCard, FindInvoice
-from ecommerce.application.features.reports.streaming import StreamOrderFeed
+from ecommerce.application.features.products.queries import CALL_COUNTS, SearchProducts
 from ecommerce.application.features.reports.queries import LongJob
+from ecommerce.application.features.reports.streaming import StreamOrderFeed
+from ecommerce.application.features.users.commands import CreateUser, DeleteUser
+from ecommerce.application.features.users.events import UserRegistered
+from ecommerce.application.features.users.queries import GetUser
+from ecommerce.composition.bootstrap import build_container, build_mediator
+from py_mediatR import (
+    CancellationTokenSource,
+    OperationCancelledError,
+    UnauthorizedError,
+)
 
 
 def adim(no: int, baslik: str) -> None:
@@ -129,7 +129,7 @@ def main() -> None:
     adim(5, "Onbellek (cache) — ayni sorgu ikinci kez handler'i CALISTIRMAZ")
     istek = SearchProducts(keyword="laptop")
     with mediator.trace() as flow:
-        ilk = mediator.send(istek)
+        mediator.send(istek)
         ikinci = mediator.send(istek)
     satir("Gonderilen", f"{istek}  (arka arkaya 2 kez)")
     satir("Donen cevap", ikinci)

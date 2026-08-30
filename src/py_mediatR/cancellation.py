@@ -1,36 +1,9 @@
-# -*- coding: utf-8 -*-
 """py_mediatR.cancellation — CancellationToken / CancellationTokenSource.
 
 v6.7.0'da tek dosyalik `py_mediatR.py` alt modullere ayrildi.
 Kod govdesi birebir aynidir. Genel API icin `import py_mediatR` kullanin;
 bu modul bir uygulama detayidir ve dogrudan import edilmesi gerekmez.
 """
-
-import inspect
-import sys
-import os
-import asyncio
-import contextvars
-import importlib
-import logging
-import random
-import time
-import json
-import hashlib
-from enum import Enum
-from pathlib import Path
-from contextlib import contextmanager
-from typing import (
-    Dict, List, Type, Tuple, Any, Iterable, Callable, Optional, Awaitable,
-    AsyncIterator, Iterator, Union, Generic, TypeVar, get_type_hints,
-    get_args, get_origin,
-)
-from dataclasses import is_dataclass, fields
-from functools import lru_cache
-from concurrent.futures import ThreadPoolExecutor, as_completed
-from threading import Lock, RLock, Thread
-
-from ._config import _debug_log
 
 
 # ============================================================================
@@ -57,9 +30,20 @@ from ._config import _debug_log
 # ile erişir. Contextvar asyncio task'lerine ve thread'lere kopyalanarak
 # taşınır — izolasyon testlerle doğrulanmıştır. Bu bir parity özelliği değil,
 # Python'a uygun belgelenmiş bir tasarım tercihidir.
-
 import contextvars as _contextvars
+import inspect
 import threading as _threading
+from functools import lru_cache
+from threading import Lock
+from typing import (
+    Any,
+    Callable,
+    ClassVar,
+    List,
+    Optional,
+)
+
+from ._config import _debug_log
 
 
 class OperationCancelledError(Exception):
@@ -76,7 +60,7 @@ class CancellationToken:
     """
     __slots__ = ("_source",)
 
-    none: "CancellationToken" = None  # aşağıda atanır
+    none: ClassVar["CancellationToken"]  # aşağıda atanır
 
     def __init__(self, source: Optional["CancellationTokenSource"] = None) -> None:
         self._source = source
@@ -91,9 +75,11 @@ class CancellationToken:
 
     def throw_if_cancellation_requested(self) -> None:
         if self.is_cancellation_requested:
+            source = self._source
+            reason = source.reason if source is not None else None
             raise OperationCancelledError(
                 "Cancellation requested"
-                + (f": {self._source.reason}" if self._source.reason else "."))
+                + (f": {reason}" if reason else "."))
 
     def register(self, callback: Callable[[], None]) -> "CancellationTokenRegistration":
         """
@@ -292,7 +278,7 @@ def current_cancellation_token() -> CancellationToken:
 
 
 @lru_cache(maxsize=2048)
-def _handle_accepts_ct(handler_cls: type) -> bool:
+def _handle_accepts_ct(handler_cls: Any) -> bool:
     """handle() imzasında `cancellation_token` parametresi var mı? (cached)"""
     try:
         return "cancellation_token" in inspect.signature(
@@ -307,7 +293,7 @@ def _invoke_handle(handler: Any, message: Any) -> Any:
     bildiriyorsa ambient token enjekte edilir (.NET Handle(request, ct)),
     bildirmiyorsa v6.2 ile birebir aynı çağrı yapılır.
     """
-    if _handle_accepts_ct(type(handler)):
+    if _handle_accepts_ct(type(handler)):  # type: ignore[arg-type]
         return handler.handle(
             message, cancellation_token=current_cancellation_token())
     return handler.handle(message)

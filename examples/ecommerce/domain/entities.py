@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Domain layer — pure entities. No py_mediatR dependency here."""
 from dataclasses import dataclass
 

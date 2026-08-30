@@ -1,16 +1,14 @@
-# -*- coding: utf-8 -*-
 """Django view'lari — her biri istegi mediator uzerinden isler."""
 import logging
 from dataclasses import asdict
 
 from django.http import HttpResponse, JsonResponse
-
-from ecommerce.composition.bootstrap import build_container, build_mediator
-from ecommerce.application.features.users.commands import CreateUser
-from ecommerce.application.features.users.queries import GetUser
-from ecommerce.application.features.products.queries import SearchProducts
 from ecommerce.application.features.billing.commands import FindInvoice
 from ecommerce.application.features.orders.commands import PlaceOrder
+from ecommerce.application.features.products.queries import SearchProducts
+from ecommerce.application.features.users.commands import CreateUser
+from ecommerce.application.features.users.queries import GetUser
+from ecommerce.composition.bootstrap import build_container, build_mediator
 
 logging.getLogger("mediatr").setLevel(logging.CRITICAL)
 

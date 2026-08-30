@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 py_mediatR v6.6 — FULL-PIPELINE layered example (e-commerce).
 
@@ -59,52 +58,88 @@ for p in (str(EXAMPLES_DIR), str(REPO_SRC)):
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
 
 from py_mediatR import (  # noqa: E402
-    Mediator, IRequest, INotification, PublishStrategy, UnauthorizedError,
-    CachingBehavior, CancellationTokenSource, OperationCancelledError,
-    make_fastapi_mediator_dependency, DIResolutionError,
-    ISender, IPublisher, IMediator, ServiceScope, TResponse,
-    CancellationTokenRegistration, coerce_to_model,
-    discover_handlers, discover_all, discover_all_v4, container_handler_factory,
+    CachingBehavior,
+    CancellationTokenRegistration,
+    CancellationTokenSource,
+    DIResolutionError,
+    IMediator,
+    INotification,
+    IPublisher,
+    IRequest,
+    ISender,
+    Mediator,
+    OperationCancelledError,
+    PublishStrategy,
+    ServiceScope,
+    TResponse,
+    UnauthorizedError,
+    coerce_to_model,
+    container_handler_factory,
+    discover_all,
+    discover_all_v4,
+    discover_handlers,
+    make_fastapi_mediator_dependency,
 )
 
-from ecommerce.composition.bootstrap import (  # noqa: E402
-    build_container, build_mediator, EXAMPLES_ROOT,
-)
 from ecommerce.application.crosscutting.audit_log import AUDIT  # noqa: E402
-from ecommerce.application.features.users.commands import (  # noqa: E402
-    CreateUser, CreateUserResponse, CreateUserHandler, DeleteUser,
-)
 from ecommerce.application.crosscutting.behaviors import AuditTrailBehavior  # noqa: E402
-from ecommerce.application.crosscutting.processors import (  # noqa: E402
-    AuditPreProcessor, MetricsPostProcessor,
-)
 from ecommerce.application.crosscutting.exceptions import (  # noqa: E402
-    InvoiceNotFoundHandler, AlertExceptionAction,
+    AlertExceptionAction,
+    InvoiceNotFoundHandler,
 )
-from ecommerce.application.features.users.queries import GetUser, GetUserResponse  # noqa: E402
-from ecommerce.application.features.users.events import (  # noqa: E402
-    UserRegistered, AccountClosed,
+from ecommerce.application.crosscutting.processors import (  # noqa: E402
+    AuditPreProcessor,
+    MetricsPostProcessor,
 )
 from ecommerce.application.explicit_registrations import Ping  # noqa: E402
-from ecommerce.application.features.orders.commands import (  # noqa: E402
-    PlaceOrder, CancelOrder, CancelOrderHandler,
+from ecommerce.application.features.billing.commands import (  # noqa: E402
+    ChargeCard,
+    FindInvoice,
+    FindInvoiceHandler,
 )
-from ecommerce.application.features.orders.queries import (  # noqa: E402
-    GetOrderStatus, GetOrderStatusResponse,
+from ecommerce.application.features.orders.commands import (  # noqa: E402
+    CancelOrder,
+    CancelOrderHandler,
+    PlaceOrder,
 )
 from ecommerce.application.features.orders.events import OrderShipped  # noqa: E402
-from ecommerce.application.features.products.queries import (  # noqa: E402
-    SearchProducts, SearchProductsHandler, QuoteLookup, CALL_COUNTS,
+from ecommerce.application.features.orders.queries import (  # noqa: E402
+    GetOrderStatus,
+    GetOrderStatusResponse,
 )
-from ecommerce.application.features.billing.commands import (  # noqa: E402
-    ChargeCard, FindInvoice, FindInvoiceHandler,
+from ecommerce.application.features.products.queries import (  # noqa: E402
+    CALL_COUNTS,
+    QuoteLookup,
+    SearchProducts,
+    SearchProductsHandler,
 )
 from ecommerce.application.features.reports.queries import (  # noqa: E402
-    FetchExchangeRates, SlowReport, ExportReport, LongJob,
+    ExportReport,
+    FetchExchangeRates,
+    LongJob,
+    SlowReport,
 )
 from ecommerce.application.features.reports.streaming import StreamOrderFeed  # noqa: E402
+from ecommerce.application.features.users.commands import (  # noqa: E402
+    CreateUser,
+    CreateUserHandler,
+    CreateUserResponse,
+    DeleteUser,
+)
+from ecommerce.application.features.users.events import (  # noqa: E402
+    AccountClosed,
+    UserRegistered,
+)
+from ecommerce.application.features.users.queries import GetUser, GetUserResponse  # noqa: E402
+from ecommerce.composition.bootstrap import (  # noqa: E402
+    EXAMPLES_ROOT,
+    build_container,
+    build_mediator,
+)
 from ecommerce.infrastructure.persistence.repositories import (  # noqa: E402
-    InMemoryUserRepository, OrderUnitOfWork, AuditWriter,
+    AuditWriter,
+    InMemoryUserRepository,
+    OrderUnitOfWork,
 )
 
 PASS = FAIL = 0

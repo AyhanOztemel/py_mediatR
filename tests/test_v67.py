@@ -5,11 +5,17 @@ import sys
 from typing import Optional
 
 import pytest
-
 from py_mediatR import (
-    DIResolutionError, IPipelineBehavior, IRequest, INotification, Mediator,
-    ServiceContainer, SyncBridgeTimeoutError, TransactionBehavior,
-    TransactionCleanupError, trace_flow,
+    DIResolutionError,
+    INotification,
+    IPipelineBehavior,
+    IRequest,
+    Mediator,
+    ServiceContainer,
+    SyncBridgeTimeoutError,
+    TransactionBehavior,
+    TransactionCleanupError,
+    trace_flow,
 )
 
 

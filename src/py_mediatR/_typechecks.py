@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """py_mediatR._typechecks — internal isinstance/issubclass helpers.
 
 v6.7.0'da tek dosyalik `py_mediatR.py` alt modullere ayrildi.
@@ -7,31 +6,11 @@ bu modul bir uygulama detayidir ve dogrudan import edilmesi gerekmez.
 """
 
 import inspect
-import sys
-import os
-import asyncio
-import contextvars
-import importlib
-import logging
-import random
-import time
-import json
-import hashlib
-from enum import Enum
-from pathlib import Path
-from contextlib import contextmanager
 from typing import (
-    Dict, List, Type, Tuple, Any, Iterable, Callable, Optional, Awaitable,
-    AsyncIterator, Iterator, Union, Generic, TypeVar, get_type_hints,
-    get_args, get_origin,
+    Any,
 )
-from dataclasses import is_dataclass, fields
-from functools import lru_cache
-from concurrent.futures import ThreadPoolExecutor, as_completed
-from threading import Lock, RLock, Thread
 
 from .contracts import INotification, IRequest, IResponse, IStreamRequest
-
 
 # ============================================================================
 # INTERNAL TYPE CHECKS
@@ -70,13 +49,11 @@ def _is_async_callable(fn: Any) -> bool:
     if inspect.iscoroutinefunction(fn):
         return True
     # functools.partial / callable instance __call__
-    call = getattr(fn, "__call__", None)
-    return bool(call and inspect.iscoroutinefunction(call))
+    return callable(fn) and inspect.iscoroutinefunction(fn.__call__)
 
 
 def _is_async_gen_callable(fn: Any) -> bool:
     """Async generator fonksiyonu mu?"""
     if inspect.isasyncgenfunction(fn):
         return True
-    call = getattr(fn, "__call__", None)
-    return bool(call and inspect.isasyncgenfunction(call))
+    return callable(fn) and inspect.isasyncgenfunction(fn.__call__)
