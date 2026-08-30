@@ -1,5 +1,10 @@
 # py_mediatR
 
+[![PyPI](https://img.shields.io/pypi/v/py-mediatR.svg)](https://pypi.org/project/py-mediatR/)
+[![Python](https://img.shields.io/pypi/pyversions/py-mediatR.svg)](https://pypi.org/project/py-mediatR/)
+[![CI](https://github.com/AyhanOztemel/py_mediatR/actions/workflows/ci.yml/badge.svg)](https://github.com/AyhanOztemel/py_mediatR/actions/workflows/ci.yml)
+[![Lisans: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/AyhanOztemel/py_mediatR/blob/main/LICENSE)
+
 > English version: [README.md](https://github.com/AyhanOztemel/py_mediatR/blob/main/README.md)
 
 Python için yüksek performanslı **CQRS / Mediator** uygulaması;
